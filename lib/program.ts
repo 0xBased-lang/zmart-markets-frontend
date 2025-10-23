@@ -18,14 +18,14 @@ const ZMART_PROPOSALS_IDL = zmartProposalsIdl as any;
  * Get zmart-core program instance
  */
 export function getZmartCoreProgram(provider: AnchorProvider) {
-  return new Program(ZMART_CORE_IDL, PROGRAM_IDS.core, provider);
+  return new Program(ZMART_CORE_IDL, provider);
 }
 
 /**
  * Get zmart-proposals program instance
  */
 export function getZmartProposalsProgram(provider: AnchorProvider) {
-  return new Program(ZMART_PROPOSALS_IDL, PROGRAM_IDS.proposals, provider);
+  return new Program(ZMART_PROPOSALS_IDL, provider);
 }
 
 /**
