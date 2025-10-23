@@ -81,16 +81,16 @@ export default function Home() {
               <p className="text-sm text-slate-400">Discover active prediction markets</p>
               <div className="text-xs text-green-400">✅ Live Now</div>
             </Link>
-            <div className="bg-slate-900/30 border border-slate-800 rounded-lg p-6 space-y-2 opacity-60">
+            <Link href="/proposals" className="bg-slate-900/30 border border-slate-800 hover:border-purple-500 rounded-lg p-6 space-y-2 transition-all hover:shadow-lg hover:shadow-purple-500/10">
               <div className="text-3xl">💡</div>
-              <h3 className="font-semibold">Create Proposals</h3>
-              <p className="text-sm text-slate-400">Propose new markets to the community</p>
-              <div className="text-xs text-purple-400">Coming Soon</div>
-            </div>
+              <h3 className="font-semibold">Proposals & Voting</h3>
+              <p className="text-sm text-slate-400">Propose new markets and vote</p>
+              <div className="text-xs text-green-400">✅ Live Now</div>
+            </Link>
             <div className="bg-slate-900/30 border border-slate-800 rounded-lg p-6 space-y-2 opacity-60">
-              <div className="text-3xl">🗳️</div>
-              <h3 className="font-semibold">Vote & Earn</h3>
-              <p className="text-sm text-slate-400">Vote on proposals and win rewards</p>
+              <div className="text-3xl">📈</div>
+              <h3 className="font-semibold">Analytics & Rewards</h3>
+              <p className="text-sm text-slate-400">Track stats and earn points</p>
               <div className="text-xs text-purple-400">Coming Soon</div>
             </div>
           </div>
