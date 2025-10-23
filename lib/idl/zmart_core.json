@@ -1,0 +1,1670 @@
+{
+  "address": "3q38JSeuMykM6vjh8g8cbpUqkBhB4SvQkQ9XedesXApu",
+  "metadata": {
+    "name": "zmart_core",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "ZMart Core Market Program"
+  },
+  "instructions": [
+    {
+      "name": "claim_winnings",
+      "docs": [
+        "Claim winnings from a resolved prediction market",
+        "",
+        "Allows winners to claim their payouts after a market is resolved.",
+        "Three scenarios:",
+        "- YES wins: Users who bet YES receive their potential_payout",
+        "- NO wins: Users who bet NO receive their potential_payout",
+        "- INVALID: All users receive refunds of their original bet amounts",
+        "",
+        "# Example",
+        "```ignore",
+        "claim_winnings(ctx)?;",
+        "```"
+      ],
+      "discriminator": [
+        161,
+        215,
+        24,
+        59,
+        14,
+        236,
+        242,
+        221
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "docs": [
+            "The resolved market account (mut: SOL transferred out)",
+            "SECURITY FIX: Explicit PDA validation and ownership check"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_id",
+                "account": "Market"
+              }
+            ]
+          },
+          "relations": [
+            "position"
+          ]
+        },
+        {
+          "name": "position",
+          "docs": [
+            "The user's position in this market (mut: mark as claimed)",
+            "SECURITY FIX: Explicit PDA validation and ownership check"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "claimer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "claimer",
+          "docs": [
+            "The user claiming winnings (mut: receives SOL)"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for SOL transfers"
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_fee_config",
+      "docs": [
+        "Create or update a fee configuration",
+        "",
+        "Creates flexible fee configurations that markets can use.",
+        "Multiple configs can exist with different tiers.",
+        "",
+        "# Arguments",
+        "* `tier` - Fee tier (1-4)",
+        "* `platform_fee_bps` - Platform fee in basis points (50-500)",
+        "* `team_fee_bps` - Team fee in basis points",
+        "* `burn_fee_bps` - Burn fee in basis points",
+        "* `creator_fee_bps` - Creator fee in basis points",
+        "* `beneficiary` - Optional beneficiary pubkey",
+        "* `beneficiary_fee_bps` - Beneficiary fee in basis points",
+        "",
+        "# Example",
+        "```ignore",
+        "create_fee_config(",
+        "ctx,",
+        "1, // Tier 1",
+        "100, // 1% platform",
+        "50, // 0.5% team",
+        "0, // No burn",
+        "200, // 2% creator",
+        "None, // No beneficiary",
+        "0,",
+        ")?;",
+        "```"
+      ],
+      "discriminator": [
+        214,
+        172,
+        105,
+        64,
+        8,
+        228,
+        209,
+        204
+      ],
+      "accounts": [
+        {
+          "name": "fee_config",
+          "docs": [
+            "The fee configuration account (PDA)",
+            "Seeds: [\"fee_config\", tier]"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "tier"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Program authority PDA (validates admin permissions)",
+            "SECURITY FIX #1: Check that admin has authority"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "docs": [
+            "Admin creating the config (must be authorized)",
+            "SECURITY FIX #1: Must match authority.admin"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation"
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "tier",
+          "type": "u8"
+        },
+        {
+          "name": "platform_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "team_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "burn_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "creator_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "beneficiary",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "beneficiary_fee_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "create_market",
+      "docs": [
+        "Create a new prediction market",
+        "",
+        "# Arguments",
+        "* `market_id` - Unique identifier for the market (used as PDA seed)",
+        "* `question` - The prediction market question (max 500 chars)",
+        "* `end_time` - Unix timestamp when market ends",
+        "* `fee_config_id` - Fee tier to use (1-4)",
+        "",
+        "# Example",
+        "```ignore",
+        "create_market(",
+        "ctx,",
+        "market_id,",
+        "\"Will Bitcoin hit $100k by end of 2025?\".to_string(),",
+        "1735689600, // Dec 31, 2025",
+        "1, // Tier 1 fees",
+        ")?;",
+        "```"
+      ],
+      "discriminator": [
+        103,
+        226,
+        97,
+        235,
+        200,
+        188,
+        251,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "docs": [
+            "Market PDA account to create",
+            "",
+            "PDA: [\"market\", market_id]"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "docs": [
+            "Creator of the market (pays for account creation)"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation"
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "market_id",
+          "type": "pubkey"
+        },
+        {
+          "name": "question",
+          "type": "string"
+        },
+        {
+          "name": "end_time",
+          "type": "i64"
+        },
+        {
+          "name": "fee_config_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initialize_authority",
+      "docs": [
+        "Initialize program authority (ONE-TIME SETUP)",
+        "",
+        "This instruction creates the singleton Authority PDA that controls admin operations.",
+        "It must be called ONCE during program deployment before any other operations.",
+        "",
+        "# Security",
+        "* Can only be called once (account init constraint)",
+        "* Initializer becomes the admin",
+        "* All future fee config creation requires this authority",
+        "",
+        "# Example",
+        "```ignore",
+        "initialize_authority(ctx)?;",
+        "```"
+      ],
+      "discriminator": [
+        13,
+        186,
+        25,
+        16,
+        218,
+        31,
+        90,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "The authority account (PDA) - singleton",
+            "Seeds: [\"authority\"]",
+            "SECURITY: init constraint ensures this can only be called once"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "initializer",
+          "docs": [
+            "The wallet initializing the authority (becomes the admin)",
+            "SECURITY: This should be the program deployer"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for account creation"
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "place_bet",
+      "docs": [
+        "Place a bet on a prediction market",
+        "",
+        "# Arguments",
+        "* `side` - Bet side: 1 = YES, 2 = NO",
+        "* `amount` - Bet amount in lamports (min 0.001 SOL)",
+        "",
+        "# Example",
+        "```ignore",
+        "place_bet(",
+        "ctx,",
+        "1, // YES",
+        "1_000_000_000, // 1 SOL",
+        "900_000_000, // Min 0.9 SOL payout (10% slippage tolerance)",
+        ")?;",
+        "```"
+      ],
+      "discriminator": [
+        222,
+        62,
+        67,
+        220,
+        63,
+        166,
+        126,
+        33
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "docs": [
+            "Market to bet on (must be active)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "position",
+          "docs": [
+            "Position PDA account to create",
+            "",
+            "PDA: [\"position\", market.key(), bettor.key()]"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "bettor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_config",
+          "docs": [
+            "Fee configuration for this market",
+            "SECURITY FIX: Load fee config to calculate fees properly"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.fee_config_id",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bettor",
+          "docs": [
+            "Bettor placing the bet (pays for position account + bet amount)"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program for transfers and account creation"
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "min_expected_payout",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "resolve_market",
+      "docs": [
+        "Resolve a prediction market",
+        "",
+        "Declares the final outcome of a market after it has ended.",
+        "MVP: Only market creator can resolve.",
+        "Phase 2: Will use community voting.",
+        "",
+        "# Arguments",
+        "* `outcome` - Final outcome: 1 = YES, 2 = NO, 3 = INVALID",
+        "",
+        "# Example",
+        "```ignore",
+        "resolve_market(",
+        "ctx,",
+        "1, // YES won",
+        ")?;",
+        "```"
+      ],
+      "discriminator": [
+        155,
+        23,
+        80,
+        173,
+        46,
+        74,
+        23,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "docs": [
+            "Market to resolve (must have ended)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "resolver",
+          "docs": [
+            "Resolver (must be market creator in MVP)",
+            "In Phase 2, this will be replaced with governance voting"
+          ],
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "outcome",
+          "type": "u8"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Authority",
+      "discriminator": [
+        36,
+        108,
+        254,
+        18,
+        167,
+        144,
+        27,
+        36
+      ]
+    },
+    {
+      "name": "FeeConfig",
+      "discriminator": [
+        143,
+        52,
+        146,
+        187,
+        219,
+        123,
+        76,
+        155
+      ]
+    },
+    {
+      "name": "Market",
+      "discriminator": [
+        219,
+        190,
+        213,
+        55,
+        0,
+        227,
+        198,
+        154
+      ]
+    },
+    {
+      "name": "Position",
+      "discriminator": [
+        170,
+        188,
+        143,
+        228,
+        122,
+        64,
+        247,
+        208
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AuthorityInitializedEvent",
+      "discriminator": [
+        132,
+        7,
+        44,
+        109,
+        57,
+        30,
+        187,
+        56
+      ]
+    },
+    {
+      "name": "BetPlaced",
+      "discriminator": [
+        88,
+        88,
+        145,
+        226,
+        126,
+        206,
+        32,
+        0
+      ]
+    },
+    {
+      "name": "FeeConfigCreatedEvent",
+      "discriminator": [
+        52,
+        51,
+        196,
+        215,
+        145,
+        202,
+        119,
+        208
+      ]
+    },
+    {
+      "name": "MarketCreated",
+      "discriminator": [
+        88,
+        184,
+        130,
+        231,
+        226,
+        84,
+        6,
+        58
+      ]
+    },
+    {
+      "name": "MarketResolved",
+      "discriminator": [
+        89,
+        67,
+        230,
+        95,
+        143,
+        106,
+        199,
+        202
+      ]
+    },
+    {
+      "name": "WinningsClaimedEvent",
+      "discriminator": [
+        30,
+        231,
+        120,
+        152,
+        158,
+        82,
+        26,
+        135
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidEndTime",
+      "msg": "Market end time must be in the future"
+    },
+    {
+      "code": 6001,
+      "name": "EndTimeTooFar",
+      "msg": "Market end time is too far in the future (max 1 year)"
+    },
+    {
+      "code": 6002,
+      "name": "EmptyQuestion",
+      "msg": "Market question cannot be empty"
+    },
+    {
+      "code": 6003,
+      "name": "QuestionTooLong",
+      "msg": "Market question exceeds maximum length (500 chars)"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidCategory",
+      "msg": "Invalid market category"
+    },
+    {
+      "code": 6005,
+      "name": "MarketAlreadyExists",
+      "msg": "Market already exists with this ID"
+    },
+    {
+      "code": 6006,
+      "name": "FeeConfigNotFound",
+      "msg": "Fee configuration not found"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidBetAmount",
+      "msg": "Bet amount must be greater than zero"
+    },
+    {
+      "code": 6008,
+      "name": "BetAmountTooLarge",
+      "msg": "Bet amount exceeds maximum allowed"
+    },
+    {
+      "code": 6009,
+      "name": "BetAmountTooSmall",
+      "msg": "Bet amount is below minimum required"
+    },
+    {
+      "code": 6010,
+      "name": "MarketNotActive",
+      "msg": "Market is not active for betting"
+    },
+    {
+      "code": 6011,
+      "name": "MarketEnded",
+      "msg": "Market has already ended"
+    },
+    {
+      "code": 6012,
+      "name": "MarketLocked",
+      "msg": "Market is locked for resolution"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidBetSide",
+      "msg": "Invalid bet side (must be YES or NO)"
+    },
+    {
+      "code": 6014,
+      "name": "InsufficientLiquidity",
+      "msg": "Insufficient pool liquidity"
+    },
+    {
+      "code": 6015,
+      "name": "SlippageExceeded",
+      "msg": "Slippage tolerance exceeded"
+    },
+    {
+      "code": 6016,
+      "name": "CannotResolveYet",
+      "msg": "Market cannot be resolved yet (end time not reached)"
+    },
+    {
+      "code": 6017,
+      "name": "AlreadyResolved",
+      "msg": "Market already resolved"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidResolution",
+      "msg": "Invalid resolution outcome (must be YES, NO, or INVALID)"
+    },
+    {
+      "code": 6019,
+      "name": "UnauthorizedResolver",
+      "msg": "Only market creator can resolve"
+    },
+    {
+      "code": 6020,
+      "name": "ResolutionWindowExpired",
+      "msg": "Resolution time window has passed"
+    },
+    {
+      "code": 6021,
+      "name": "NoWinningsToClaim",
+      "msg": "No winnings to claim"
+    },
+    {
+      "code": 6022,
+      "name": "MarketNotResolved",
+      "msg": "Market not resolved yet"
+    },
+    {
+      "code": 6023,
+      "name": "MarketNotSettled",
+      "msg": "Market not settled yet"
+    },
+    {
+      "code": 6024,
+      "name": "AlreadyClaimed",
+      "msg": "Position already claimed"
+    },
+    {
+      "code": 6025,
+      "name": "NoPosition",
+      "msg": "User has no position in this market"
+    },
+    {
+      "code": 6026,
+      "name": "NoWinnings",
+      "msg": "No winnings available (wrong side)"
+    },
+    {
+      "code": 6027,
+      "name": "InvalidFeeConfig",
+      "msg": "Fee configuration is invalid"
+    },
+    {
+      "code": 6028,
+      "name": "FeePercentageTooHigh",
+      "msg": "Total fees exceed maximum allowed (100%)"
+    },
+    {
+      "code": 6029,
+      "name": "PoolOverflow",
+      "msg": "Pool calculation overflow"
+    },
+    {
+      "code": 6030,
+      "name": "PoolUnderflow",
+      "msg": "Pool calculation underflow"
+    },
+    {
+      "code": 6031,
+      "name": "InvalidPoolRatio",
+      "msg": "Invalid pool ratio"
+    },
+    {
+      "code": 6032,
+      "name": "Unauthorized",
+      "msg": "Unauthorized: insufficient permissions"
+    },
+    {
+      "code": 6033,
+      "name": "UnauthorizedAdmin",
+      "msg": "Unauthorized: caller is not the admin"
+    },
+    {
+      "code": 6034,
+      "name": "UnauthorizedCreator",
+      "msg": "Unauthorized: caller is not the market creator"
+    },
+    {
+      "code": 6035,
+      "name": "UnauthorizedPosition",
+      "msg": "Unauthorized: caller does not own this position"
+    },
+    {
+      "code": 6036,
+      "name": "CreatorCannotBet",
+      "msg": "Market creator cannot bet on their own market"
+    },
+    {
+      "code": 6037,
+      "name": "InvalidStateTransition",
+      "msg": "Invalid market state transition"
+    },
+    {
+      "code": 6038,
+      "name": "CorruptedMarketData",
+      "msg": "Market account data is corrupted"
+    },
+    {
+      "code": 6039,
+      "name": "CorruptedPositionData",
+      "msg": "Position account data is corrupted"
+    },
+    {
+      "code": 6040,
+      "name": "InvalidAccountDiscriminator",
+      "msg": "Invalid account discriminator"
+    },
+    {
+      "code": 6041,
+      "name": "AccountNotInitialized",
+      "msg": "Account not initialized"
+    },
+    {
+      "code": 6042,
+      "name": "AccountAlreadyInitialized",
+      "msg": "Account already initialized"
+    },
+    {
+      "code": 6043,
+      "name": "ArithmeticOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6044,
+      "name": "ArithmeticUnderflow",
+      "msg": "Arithmetic underflow"
+    },
+    {
+      "code": 6045,
+      "name": "DivisionByZero",
+      "msg": "Division by zero"
+    },
+    {
+      "code": 6046,
+      "name": "InvalidOddsCalculation",
+      "msg": "Invalid odds calculation"
+    }
+  ],
+  "types": [
+    {
+      "name": "Authority",
+      "docs": [
+        "Program authority account",
+        "",
+        "Controls admin operations like creating fee configs.",
+        "This is a singleton PDA that defines who can perform privileged operations.",
+        "",
+        "PDA: [\"authority\"]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "The admin wallet that has authority over the program"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "When this authority was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "docs": [
+              "Last time the admin was changed"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump seed"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuthorityInitializedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetPlaced",
+      "docs": [
+        "Event emitted when a bet is placed"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "docs": [
+              "Market that was bet on"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "position",
+            "docs": [
+              "Position account created"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bettor",
+            "docs": [
+              "Bettor's wallet"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "side",
+            "docs": [
+              "Bet side (1=YES, 2=NO)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "docs": [
+              "Bet amount in lamports"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "potential_payout",
+            "docs": [
+              "Potential payout if bet wins"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "yes_pool",
+            "docs": [
+              "YES pool after this bet"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_pool",
+            "docs": [
+              "NO pool after this bet"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "docs": [
+              "Bet timestamp"
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeConfig",
+      "docs": [
+        "Fee configuration account - stores flexible fee parameters",
+        "",
+        "PDA: [\"fee_config\", tier]",
+        "",
+        "This allows fees to be adjusted without redeploying the program!"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tier",
+            "docs": [
+              "Fee tier (1-4, matches database)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "platform_fee_bps",
+            "docs": [
+              "Platform fee in basis points (e.g., 100 = 1%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "team_fee_bps",
+            "docs": [
+              "Team fee in basis points"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "burn_fee_bps",
+            "docs": [
+              "Burn fee in basis points"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "creator_fee_bps",
+            "docs": [
+              "Creator fee in basis points"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "beneficiary",
+            "docs": [
+              "Optional beneficiary (for charity/crowdfunding markets)"
+            ],
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "beneficiary_fee_bps",
+            "docs": [
+              "Beneficiary fee in basis points (if set)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "active_from",
+            "docs": [
+              "When this config becomes active"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "active_until",
+            "docs": [
+              "When this config expires (None = never)"
+            ],
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "is_active",
+            "docs": [
+              "Whether this config is currently active"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "created_by",
+            "docs": [
+              "Admin who created this config"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "Creation timestamp"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeConfigCreatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tier",
+            "type": "u8"
+          },
+          {
+            "name": "platform_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "team_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "burn_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "creator_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "beneficiary",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "beneficiary_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "total_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "created_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Market",
+      "docs": [
+        "Market account - stores all information about a prediction market",
+        "",
+        "PDA: [\"market\", market_id]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_id",
+            "docs": [
+              "Unique identifier for this market (Pubkey as bytes)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "docs": [
+              "Creator of the market"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "question",
+            "docs": [
+              "Market question (max 500 chars)"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "end_time",
+            "docs": [
+              "Market end time (Unix timestamp)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "resolution_time",
+            "docs": [
+              "Resolution time (when market was resolved)"
+            ],
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "yes_pool",
+            "docs": [
+              "Current YES pool size (in lamports)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_pool",
+            "docs": [
+              "Current NO pool size (in lamports)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "fee_config_id",
+            "docs": [
+              "Fee configuration ID (references FeeConfig)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "state",
+            "docs": [
+              "Market state (0=Pending, 1=Active, 2=Locked, 3=Resolved, 4=Settled, 5=Cancelled)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "resolution",
+            "docs": [
+              "Resolution outcome (1=YES, 2=NO, 3=INVALID, None=not resolved)"
+            ],
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "total_volume",
+            "docs": [
+              "Total volume traded (cumulative)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_fees_collected",
+            "docs": [
+              "Total fees collected (in lamports)",
+              "SECURITY FIX: Track fees separately from pools"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "unique_bettors",
+            "docs": [
+              "Number of unique bettors"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "Market creation time"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "docs": [
+              "Last update time"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketCreated",
+      "docs": [
+        "Event emitted when a market is created"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "docs": [
+              "Address of the created market account"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "market_id",
+            "docs": [
+              "Market ID used as seed"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "docs": [
+              "Creator's wallet address"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "question",
+            "docs": [
+              "Market question"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "end_time",
+            "docs": [
+              "Market end time"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "fee_config_id",
+            "docs": [
+              "Fee configuration tier"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "timestamp",
+            "docs": [
+              "Creation timestamp"
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketResolved",
+      "docs": [
+        "Event emitted when a market is resolved"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "docs": [
+              "Market that was resolved"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "market_id",
+            "docs": [
+              "Market ID"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "resolver",
+            "docs": [
+              "Who resolved it"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "outcome",
+            "docs": [
+              "Final outcome (1=YES, 2=NO, 3=INVALID)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "yes_pool",
+            "docs": [
+              "Final YES pool"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_pool",
+            "docs": [
+              "Final NO pool"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_volume",
+            "docs": [
+              "Total volume traded"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "docs": [
+              "Resolution timestamp"
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "docs": [
+        "Position account - stores a user's bet on a market",
+        "",
+        "PDA: [\"position\", market.key(), user.key()]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "docs": [
+              "Market this position belongs to"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "docs": [
+              "User who owns this position"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "side",
+            "docs": [
+              "Side of the bet (1=YES, 2=NO)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "docs": [
+              "Amount wagered (in lamports)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "potential_payout",
+            "docs": [
+              "Potential payout if wins (in lamports)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "yes_pool_at_bet",
+            "docs": [
+              "YES pool size at time of bet"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_pool_at_bet",
+            "docs": [
+              "NO pool size at time of bet"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "claimed",
+            "docs": [
+              "Whether winnings have been claimed"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "claimed_at",
+            "docs": [
+              "Timestamp when winnings were claimed (if claimed)"
+            ],
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "Timestamp when bet was placed"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WinningsClaimedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "claimer",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}
