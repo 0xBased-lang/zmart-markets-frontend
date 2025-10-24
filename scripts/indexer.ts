@@ -35,12 +35,18 @@ const connection = new Connection(RPC_ENDPOINT, 'confirmed');
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const provider = new AnchorProvider(connection, {} as any, AnchorProvider.defaultOptions());
 
-// Import IDLs
-const zmartCoreIdl = require('../lib/idl/zmart_core.json');
-const zmartProposalsIdl = require('../lib/idl/zmart_proposals.json');
+// Global program references (initialized in main())
+let coreProgram: Program<any>;
+let proposalsProgram: Program<any>;
 
-const coreProgram = new Program(zmartCoreIdl, provider);
-const proposalsProgram = new Program(zmartProposalsIdl, provider);
+// Import IDLs (async wrapper needed for ES modules)
+async function initializePrograms() {
+  const { default: zmartCoreIdl } = await import('../lib/idl/zmart_core.json', { with: { type: 'json' } });
+  const { default: zmartProposalsIdl } = await import('../lib/idl/zmart_proposals.json', { with: { type: 'json' } });
+
+  coreProgram = new Program(zmartCoreIdl as any, provider);
+  proposalsProgram = new Program(zmartProposalsIdl as any, provider);
+}
 
 // Statistics
 let stats = {
@@ -192,7 +198,7 @@ async function updateStats() {
       total_markets: markets.length,
       active_markets: markets.filter((m: any) => m.status === 'active').length,
       resolved_markets: markets.filter((m: any) => m.status === 'resolved').length,
-      total_volume: markets.reduce((sum: number, m: any) => sum + BigInt(m.yes_pool || 0) + BigInt(m.no_pool || 0), BigInt(0)).toString(),
+      total_volume: markets.reduce((sum: bigint, m: any) => sum + BigInt(m.yes_pool || 0) + BigInt(m.no_pool || 0), BigInt(0)).toString(),
       total_bets: bets.length,
       unique_bettors: new Set(bets.map((b: any) => b.user_wallet)).size,
       total_proposals: proposals.length,
@@ -252,6 +258,11 @@ async function runIndexer() {
   console.log(`Core Program: ${PROGRAM_IDS.core.toString()}`);
   console.log(`Proposals Program: ${PROGRAM_IDS.proposals.toString()}\n`);
 
+  // Initialize programs
+  console.log('⚙️  Initializing programs...');
+  await initializePrograms();
+  console.log('✅ Programs initialized\n');
+
   // Initial sync
   await indexMarkets();
   await indexProposals();
@@ -262,6 +273,12 @@ async function runIndexer() {
   console.log(`  Markets: ${stats.marketsIndexed}`);
   console.log(`  Proposals: ${stats.proposalsIndexed}`);
   console.log(`  Errors: ${stats.errors}\n`);
+
+  // Check for --once flag
+  if (process.argv.includes('--once')) {
+    console.log('✅ Single run complete (--once flag detected). Exiting...\n');
+    process.exit(0);
+  }
 
   // Continuous sync every 10 seconds
   console.log('🔄 Starting continuous sync (every 10 seconds)...\n');
