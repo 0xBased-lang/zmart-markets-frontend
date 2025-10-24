@@ -10,11 +10,14 @@ import { ConspiracyCard } from "@/components/conspiracy-card";
 import { ConspiracyButton } from "@/components/conspiracy-button";
 import { GlitchText } from "@/components/glitch-text";
 import { BorderBeam } from "@/components/ui/border-beam";
+import { ParticleText } from "@/components/particle-text";
+// import { TerminalBoot } from "@/components/terminal-boot"; // Uncomment for boot sequence
 
 export default function Home() {
   const { publicKey } = useWallet();
   const { connection } = useConnection();
   const [balance, setBalance] = useState<number | null>(null);
+  // const [showBoot, setShowBoot] = useState(true); // Uncomment for boot sequence
 
   useEffect(() => {
     if (publicKey) {
@@ -28,6 +31,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* 🌑 Terminal Boot Sequence (Uncomment to enable) */}
+      {/* {showBoot && <TerminalBoot onComplete={() => setShowBoot(false)} />} */}
+
       {/* 🌑 Conspiracy Header */}
       <header className="border-b border-border-subtle bg-surface/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -47,22 +53,27 @@ export default function Home() {
       {/* 🌑 Hero Section */}
       <main className="flex-1 container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto space-y-12">
-          {/* Hero Title */}
+          {/* Hero Title - ULTRA CONSPIRACY MODE */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center space-y-6"
           >
-            <h2 className="text-5xl md:text-6xl font-bold font-display leading-tight">
-              <GlitchText intensity="medium">
-                DECENTRALIZED
-              </GlitchText>
-              <br />
-              <span className="bg-gradient-to-r from-conspiracy-purple via-conspiracy-cyan to-conspiracy-purple bg-clip-text text-transparent animate-pulse-glow">
-                PREDICTION MARKETS
-              </span>
-            </h2>
+            <div className="text-5xl md:text-6xl font-bold font-display leading-tight">
+              <ParticleText
+                text="DECENTRALIZED"
+                className="mb-4"
+                particleCount={150}
+                aggressiveness={0.7}
+              />
+              <ParticleText
+                text="PREDICTION MARKETS"
+                className="bg-gradient-to-r from-conspiracy-purple via-conspiracy-cyan to-conspiracy-purple bg-clip-text text-transparent"
+                particleCount={200}
+                aggressiveness={0.8}
+              />
+            </div>
             <p className="text-xl text-muted-foreground font-mono">
               CREATE • TRADE • PROFIT • <span className="text-conspiracy-cyan">ON SOLANA</span>
             </p>

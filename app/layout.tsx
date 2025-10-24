@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { FallingGlitch } from "@/components/falling-glitch";
+import { DataStream } from "@/components/data-stream";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -27,13 +29,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${spaceGrotesk.variable} ${jetBrainsMono.variable} font-sans antialiased`}>
-        {/* 🌑 Ambient Background Effects */}
-        <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-conspiracy-purple/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-conspiracy-cyan/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-conspiracy-purple/5 rounded-full blur-3xl" />
+      <body className={`${spaceGrotesk.variable} ${jetBrainsMono.variable} font-sans antialiased scan-lines noise-overlay`}>
+        {/* 🌑 ULTRA CONSPIRACY MODE - Matrix Background */}
+        <div className="fixed inset-0 z-0">
+          <FallingGlitch
+            glitchIntensity={0.08}
+            fallSpeed={1.2}
+            glitchSpeed={30}
+          >
+            <div />
+          </FallingGlitch>
         </div>
+
+        {/* 🌑 Data Streams on Sides */}
+        <DataStream side="left" />
+        <DataStream side="right" />
 
         {/* Main Content */}
         <div className="relative z-10">
