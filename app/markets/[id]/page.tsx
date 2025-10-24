@@ -211,7 +211,7 @@ export default function MarketDetailPage() {
                   {(totalPool / LAMPORTS_PER_SOL).toFixed(2)} SOL
                 </div>
                 <div className="text-purple-400">
-                  ⚡ Loaded from database (<100ms)
+                  ⚡ Loaded from database (&lt;100ms)
                 </div>
               </div>
 
