@@ -1,26 +1,164 @@
 @import "tailwindcss";
 
+/* 🌑 CONSPIRACY AESTHETIC - ZMart Dark Theme */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Ultra-Dark Base Colors (OKLCH) */
+  --background: oklch(0.08 0.01 270);
+  --foreground: oklch(0.95 0.02 180);
+  --surface: oklch(0.12 0.02 270);
+  --surface-elevated: oklch(0.16 0.02 270);
+
+  /* Conspiracy Accent Colors */
+  --conspiracy-purple: oklch(0.50 0.25 300);
+  --conspiracy-cyan: oklch(0.65 0.20 200);
+  --conspiracy-green: oklch(0.55 0.22 150);
+  --conspiracy-red: oklch(0.55 0.25 25);
+  --conspiracy-amber: oklch(0.65 0.22 75);
+
+  /* Glow Effects */
+  --glow-purple: oklch(0.70 0.30 300 / 0.3);
+  --glow-cyan: oklch(0.80 0.25 200 / 0.3);
+
+  /* Borders & Overlays */
+  --border-subtle: oklch(1 0 0 / 0.08);
+  --border-glow: oklch(1 0 0 / 0.15);
+  --muted-foreground: oklch(0.55 0.03 200);
+
+  /* Text Shadows for Glow */
+  --text-shadow-purple: 0 0 10px var(--glow-purple), 0 0 20px var(--glow-purple), 0 0 30px var(--glow-purple);
+  --text-shadow-cyan: 0 0 10px var(--glow-cyan), 0 0 20px var(--glow-cyan), 0 0 30px var(--glow-cyan);
 }
 
 @theme inline {
+  /* Map colors to Tailwind */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-conspiracy-purple: var(--conspiracy-purple);
+  --color-conspiracy-cyan: var(--conspiracy-cyan);
+  --color-conspiracy-green: var(--conspiracy-green);
+  --color-conspiracy-red: var(--conspiracy-red);
+  --color-conspiracy-amber: var(--conspiracy-amber);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-glow: var(--border-glow);
+  --color-muted-foreground: var(--muted-foreground);
+
+  /* Font Families */
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-data: "Roboto Mono", "SF Mono", monospace;
+
+  /* Animation Durations */
+  --animate-duration-glitch: 3s;
+  --animate-duration-pulse: 2s;
+  --animate-duration-border-beam: 12s;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Keyframe Animations */
+@keyframes glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+
+@keyframes glitch-top {
+  0%, 100% { clip-path: inset(0 0 95% 0); }
+  20% { clip-path: inset(20% 0 65% 0); }
+  40% { clip-path: inset(40% 0 45% 0); }
+  60% { clip-path: inset(60% 0 25% 0); }
+  80% { clip-path: inset(80% 0 5% 0); }
+}
+
+@keyframes glitch-bottom {
+  0%, 100% { clip-path: inset(95% 0 0 0); }
+  20% { clip-path: inset(65% 0 20% 0); }
+  40% { clip-path: inset(45% 0 40% 0); }
+  60% { clip-path: inset(25% 0 60% 0); }
+  80% { clip-path: inset(5% 0 80% 0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--glow-purple);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--glow-cyan);
   }
 }
 
+/* Animation Utilities */
+.animate-glitch {
+  animation: glitch var(--animate-duration-glitch) infinite;
+}
+
+.animate-glitch-top {
+  animation: glitch-top 2s infinite;
+}
+
+.animate-glitch-bottom {
+  animation: glitch-bottom 2.5s infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow var(--animate-duration-pulse) infinite;
+}
+
+/* Text Glow Utilities */
+.text-glow-purple {
+  text-shadow: var(--text-shadow-purple);
+}
+
+.text-glow-cyan {
+  text-shadow: var(--text-shadow-cyan);
+}
+
+/* Grid Pattern Utility */
+.conspiracy-grid {
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Base Styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--conspiracy-purple);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--conspiracy-cyan);
+}
+
+/* Selection Styling */
+::selection {
+  background: var(--conspiracy-purple);
+  color: var(--foreground);
+}
+
+::-moz-selection {
+  background: var(--conspiracy-purple);
+  color: var(--foreground);
 }
